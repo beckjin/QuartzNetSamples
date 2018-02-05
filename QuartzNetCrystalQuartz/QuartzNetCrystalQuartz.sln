@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Owin_SelfHosted", "Owin_Sel
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Owin_WebSimple", "Owin_WebSimple\Owin_WebSimple.csproj", "{D2343E2A-F215-435F-A940-17CE99D6CFEE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Owin_WebRemote", "Owin_WebRemote", "{614F3D64-AEF0-439C-B8A3-150A02245B9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Owin_Web_Server", "Owin_Web_Server\Owin_Web_Server.csproj", "{84CBEC1A-EC03-447B-AB16-538E95455575}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,9 +25,16 @@ Global
 		{D2343E2A-F215-435F-A940-17CE99D6CFEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2343E2A-F215-435F-A940-17CE99D6CFEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2343E2A-F215-435F-A940-17CE99D6CFEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84CBEC1A-EC03-447B-AB16-538E95455575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84CBEC1A-EC03-447B-AB16-538E95455575}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84CBEC1A-EC03-447B-AB16-538E95455575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84CBEC1A-EC03-447B-AB16-538E95455575}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{84CBEC1A-EC03-447B-AB16-538E95455575} = {614F3D64-AEF0-439C-B8A3-150A02245B9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {70940B51-248C-4C2A-99AA-220A068BDA60}
