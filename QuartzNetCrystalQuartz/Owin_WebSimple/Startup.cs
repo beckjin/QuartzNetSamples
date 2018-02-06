@@ -4,7 +4,7 @@ using Owin;
 using Quartz;
 using Quartz.Impl;
 
-[assembly: OwinStartup(typeof(Owin_WebSimple.Startup))]
+//[assembly: OwinStartup(typeof(Owin_WebSimple.Startup))]
 namespace Owin_WebSimple
 {
     public class Startup
