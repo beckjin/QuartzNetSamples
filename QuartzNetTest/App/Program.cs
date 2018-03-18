@@ -1,6 +1,5 @@
 ﻿using Quartz;
 using Quartz.Impl;
-using Quartz.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -10,11 +9,8 @@ namespace App
     {
         static void Main(string[] args)
         {
-            //LogProvider.SetCurrentLogProvider(new ConsoleLogProvider());
-
             RunScheduler().GetAwaiter().GetResult();
 
-            Console.WriteLine("按任意键退出");
             Console.ReadKey();
         }
 
@@ -22,9 +18,12 @@ namespace App
         {
             try
             {
-                // 创建作业调度池
+                // 创建作业调度器
                 ISchedulerFactory factory = new StdSchedulerFactory();
                 IScheduler scheduler = await factory.GetScheduler();
+
+                // 调度器开始运行
+                await scheduler.Start();
 
                 // 创建一个作业
                 IJobDetail job = JobBuilder.Create<HelloJob>()
@@ -40,40 +39,12 @@ namespace App
                         .RepeatForever())
                     .Build();
 
-                // 加入作业调度池中
+                // 加入作业调度器中
                 await scheduler.ScheduleJob(job, trigger);
-
-                // 开始运行
-                await scheduler.Start();
             }
             catch (SchedulerException se)
             {
                 Console.WriteLine(se);
-            }
-        }
-
-        private class ConsoleLogProvider : ILogProvider
-        {
-            public Logger GetLogger(string name)
-            {
-                return (level, func, exception, parameters) =>
-                {
-                    if (level >= LogLevel.Info && func != null)
-                    {
-                        Console.WriteLine("[" + DateTime.Now.ToLongTimeString() + "] [" + level + "] " + func(), parameters);
-                    }
-                    return true;
-                };
-            }
-
-            public IDisposable OpenMappedContext(string key, string value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDisposable OpenNestedContext(string message)
-            {
-                throw new NotImplementedException();
             }
         }
     }
@@ -90,6 +61,4 @@ namespace App
             await Console.Out.WriteLineAsync("Hello Quartz.NET!");
         }
     }
-
-  
 }

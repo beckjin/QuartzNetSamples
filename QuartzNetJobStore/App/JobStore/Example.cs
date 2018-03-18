@@ -1,5 +1,6 @@
 ﻿using Quartz;
 using Quartz.Impl;
+using Quartz.Impl.Matchers;
 using System;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
@@ -24,7 +25,11 @@ namespace App.JobStore
                 ISchedulerFactory sf = new StdSchedulerFactory();
                 IScheduler sched = await sf.GetScheduler();
 
+                await sched.Start();
+
                 DateTimeOffset startTime = DateBuilder.NextGivenSecondDate(null, 10);
+
+                // IJobDetail job1 = JobBuilder.Create().OfType<StateJob>().Build();
 
                 IJobDetail job1 = JobBuilder.Create<StateJob>()
                     .WithIdentity("job1", "group1")
@@ -50,6 +55,7 @@ namespace App.JobStore
 
                 ISimpleTrigger trigger2 = (ISimpleTrigger)TriggerBuilder.Create()
                     .WithIdentity("trigger2", "group1")
+                    .WithPriority(1) // 优先级
                     .StartAt(startTime)
                     .WithSimpleSchedule(x => x.WithIntervalInSeconds(10).WithRepeatCount(500))
                     .Build();
@@ -60,7 +66,7 @@ namespace App.JobStore
                 //await sched.TriggerJob(new JobKey("job1", "group1"));
                 //await sched.TriggerJob(new JobKey("job2", "group1"));
 
-                await sched.Start();
+                var jobGroups = await sched.GetJobKeys(GroupMatcher<JobKey>.AnyGroup());
 
                 await Task.Delay(TimeSpan.FromMinutes(5));
 
