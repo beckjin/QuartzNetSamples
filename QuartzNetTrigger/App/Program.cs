@@ -1,5 +1,6 @@
 ﻿using Quartz;
 using Quartz.Impl;
+using Quartz.Impl.Calendar;
 using System;
 using System.Threading.Tasks;
 
@@ -31,6 +32,30 @@ namespace App
 
             // 设置trigger开始时间
             var startAt = DateTimeOffset.Now;
+
+            // 排除一天中的时间范围不执行
+            DailyCalendar dailyCalendar = new DailyCalendar(DateBuilder.DateOf(21, 0, 0).DateTime, DateBuilder.DateOf(22, 0, 0).DateTime);
+
+            // 排除星期中的一天或多天
+            WeeklyCalendar weeklyCalendar = new WeeklyCalendar();
+            weeklyCalendar.SetDayExcluded(DayOfWeek.Friday, true);
+
+            // 指定特定的日期，精度到天
+            HolidayCalendar holidayCalendar = new HolidayCalendar();
+            var holidayDateTime = new DateTime(2018, 3, 1);
+            holidayCalendar.AddExcludedDate(holidayDateTime);
+
+            // 排除月份中的某天，可选值为1-31，精度到天
+            MonthlyCalendar monthlyCalendar = new MonthlyCalendar();
+            monthlyCalendar.SetDayExcluded(1, true);
+
+            // 排除每年中的某天，精度到天
+            AnnualCalendar annualCalendar = new AnnualCalendar();
+            var annualDateTime = new DateTime(2018, 3, 1);
+            annualCalendar.SetDayExcluded(annualDateTime, true);
+
+            // 使用表达式排除某些时间段不执行
+            CronCalendar cronCalendar = new CronCalendar("* * * 18 3 ?");
 
             // trigger的附属信息
             var triggerDataMap = new JobDataMap();
