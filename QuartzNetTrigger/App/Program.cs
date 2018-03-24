@@ -40,22 +40,24 @@ namespace App
             WeeklyCalendar weeklyCalendar = new WeeklyCalendar();
             weeklyCalendar.SetDayExcluded(DayOfWeek.Friday, true);
 
-            // 指定特定的日期，精度到天
+            // 指定特定的日期，精确到天
             HolidayCalendar holidayCalendar = new HolidayCalendar();
-            var holidayDateTime = new DateTime(2018, 3, 1);
+            var holidayDateTime = new DateTime(2018, 11, 11);
             holidayCalendar.AddExcludedDate(holidayDateTime);
 
-            // 排除月份中的某天，可选值为1-31，精度到天
+            // 排除月份中的某天，可选值为1-31，精确到天
             MonthlyCalendar monthlyCalendar = new MonthlyCalendar();
-            monthlyCalendar.SetDayExcluded(1, true);
+            monthlyCalendar.SetDayExcluded(31, true);
 
-            // 排除每年中的某天，精度到天
+            // 排除每年中的某天，精确到天
             AnnualCalendar annualCalendar = new AnnualCalendar();
-            var annualDateTime = new DateTime(2018, 3, 1);
+            var annualDateTime = new DateTime(2018, 11, 11);
             annualCalendar.SetDayExcluded(annualDateTime, true);
 
             // 使用表达式排除某些时间段不执行
-            CronCalendar cronCalendar = new CronCalendar("* * * 18 3 ?");
+            CronCalendar cronCalendar = new CronCalendar("* * * 24 3 ?");
+
+            await scheduler.AddCalendar("calendar", cronCalendar, true, true);
 
             // trigger的附属信息
             var triggerDataMap = new JobDataMap();
@@ -64,8 +66,15 @@ namespace App
             // 创建触发器
             ITrigger trigger1 = TriggerBuilder.Create()
                 .WithIdentity("trigger1", "triggerGroup1")
-                .StartAt(startAt)
-                .WithCronSchedule("0/2 * * * * ?")
+                .StartAt(DateBuilder.DateOf(16, 25, 40))
+                .WithDailyTimeIntervalSchedule(w => w
+                                    .WithRepeatCount(20)
+                                    .WithIntervalInSeconds(4)
+                                    .WithMisfireHandlingInstructionIgnoreMisfires())
+                //.WithSimpleSchedule(w => w
+                //                .WithRepeatCount(20)
+                //                .WithIntervalInHours(1)
+                //                .WithMisfireHandlingInstructionNowWithExistingCount())
                 .UsingJobData(triggerDataMap)
                 .WithPriority(3)
                 .Build();
@@ -74,10 +83,11 @@ namespace App
             ITrigger trigger2 = TriggerBuilder.Create()
                 .WithIdentity("trigger2", "triggerGroup1")
                 .StartAt(startAt)
-                .EndAt(DateTimeOffset.Now.AddHours(1))
+                .EndAt(DateTimeOffset.Now.AddDays(2))
                 .WithCronSchedule("0/2 * * * * ?")
                 .ForJob(job)
                 .UsingJobData(triggerDataMap)
+                .ModifiedByCalendar("calendar")
                 .WithPriority(7)
                 .Build();
 
@@ -103,7 +113,11 @@ namespace App
         {
             //var name = context.Trigger.JobDataMap["name"].ToString();
             var keyName = context.Trigger.Key.Name;
-            await Console.Out.WriteLineAsync($"triggerKeyName:{keyName}");
+
+            var fireTime = context.ScheduledFireTimeUtc?.ToLocalTime();
+            var nextFireTime = context.NextFireTimeUtc?.ToLocalTime();
+            var now = DateTime.Now.ToLocalTime();
+            await Console.Out.WriteLineAsync($"triggerKeyName:{keyName}, now:{now}, fireTime: " + fireTime + ", nextFireTime: " + nextFireTime);
         }
     }
 }
