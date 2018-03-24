@@ -66,7 +66,7 @@ namespace App
             // 创建触发器
             ITrigger trigger1 = TriggerBuilder.Create()
                 .WithIdentity("trigger1", "triggerGroup1")
-                .StartAt(DateBuilder.DateOf(16, 25, 40))
+                .StartAt(DateBuilder.DateOf(18, 25, 40))
                 .WithDailyTimeIntervalSchedule(w => w
                                     .WithRepeatCount(20)
                                     .WithIntervalInSeconds(4)
@@ -83,8 +83,7 @@ namespace App
             ITrigger trigger2 = TriggerBuilder.Create()
                 .WithIdentity("trigger2", "triggerGroup1")
                 .StartAt(startAt)
-                .EndAt(DateTimeOffset.Now.AddDays(2))
-                .WithCronSchedule("0/2 * * * * ?")
+                .WithCronSchedule("* * * 24-25 3 ?")
                 .ForJob(job)
                 .UsingJobData(triggerDataMap)
                 .ModifiedByCalendar("calendar")
