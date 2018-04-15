@@ -1,0 +1,5 @@
+version: '3'
+
+services:
+  app:
+    image: beckjin/test-quartznet:0.0.1

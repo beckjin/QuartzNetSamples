@@ -1,67 +1,48 @@
-﻿using Quartz;
-using Quartz.Impl;
-using System;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace App_NetCore
 {
     class Program
     {
+        private static readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+        private static TestSchedule testSchedule;
+
         static void Main(string[] args)
         {
-            RunScheduler().GetAwaiter().GetResult();
+            testSchedule = new TestSchedule();
 
-            Console.ReadKey();
-        }
+            // 开启新线程执行 Schedule
+            Task.Run(Start);
 
-        public static async Task RunScheduler()
-        {
-            // 创建作业调度器
-            ISchedulerFactory factory = new StdSchedulerFactory();
-            IScheduler scheduler = await factory.GetScheduler();
-
-            await scheduler.Start();
-
-            var jobDataMap = new JobDataMap();
-            jobDataMap.Add("times", "1");
-
-            // 创建一个作业
-            IJobDetail job = JobBuilder.Create<HelloJob>()
-                .WithIdentity("job1", "jobGroup1")
-                .UsingJobData(jobDataMap)
-                .Build();
-
-            // 创建一个触发器
-            ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("trigger1", "triggerGroup1")
-                .StartNow()
-                .WithSimpleSchedule(x => x
-                    .WithIntervalInSeconds(1)
-                    .WithRepeatCount(10))
-                .Build();
-
-            var jobExist = await scheduler.CheckExists(job.Key);
-            if (!jobExist)
+            Console.CancelKeyPress += (sender, e) =>
             {
-                await scheduler.ScheduleJob(job, trigger);
-            }
+                Task.Run(StopSilo);
+            };
+
+            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+            {
+                Task.Run(StopSilo);
+            };
+
+            // 进入阻塞状态，开始等待唤醒信号。（防止程序直接退出）
+            manualResetEvent.WaitOne();
         }
-    }
 
-    [PersistJobDataAfterExecution]
-    public class HelloJob : IJob
-    {
-        /// <summary>
-        /// 作业调度定时执行的方法
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public async Task Execute(IJobExecutionContext context)
+
+        private static async Task Start()
         {
-            var times = Convert.ToInt32(context.JobDetail.JobDataMap["times"]);
-            context.JobDetail.JobDataMap["times"] = (times + 1).ToString();
+            await testSchedule.Start();
+            Console.WriteLine("started");
+        }
 
-            await Console.Out.WriteLineAsync($"execute {times} times");
+        private static async Task StopSilo()
+        {
+            await testSchedule.Stop();
+            Console.WriteLine("stopped");
+            // 取消阻塞状态，发出唤醒信号
+            manualResetEvent.Set();
         }
     }
 }

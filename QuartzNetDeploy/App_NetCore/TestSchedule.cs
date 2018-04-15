@@ -2,7 +2,7 @@
 using Quartz.Impl;
 using System.Threading.Tasks;
 
-namespace App_NetFramework
+namespace App_NetCore
 {
     public class TestSchedule
     {
@@ -33,14 +33,16 @@ namespace App_NetFramework
             scheduler.ScheduleJob(job, trigger).Wait();
         }
 
-        public void Start()
+
+        public async Task Start()
         {
-            scheduler.Start().Wait();
+            await scheduler.Start();
         }
 
-        public void Stop()
+        public async Task Stop()
         {
-            scheduler.Shutdown().Wait();
+            await scheduler.Shutdown();
         }
+
     }
 }
