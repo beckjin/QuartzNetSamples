@@ -1,7 +1,4 @@
-﻿using Quartz;
-using Quartz.Impl;
-using System;
-using System.Threading.Tasks;
+﻿using Topshelf;
 
 namespace App_NetFramework
 {
@@ -9,59 +6,32 @@ namespace App_NetFramework
     {
         static void Main(string[] args)
         {
-            RunScheduler().GetAwaiter().GetResult();
 
-            Console.ReadKey();
-        }
-
-        public static async Task RunScheduler()
-        {
-            // 创建作业调度器
-            ISchedulerFactory factory = new StdSchedulerFactory();
-            IScheduler scheduler = await factory.GetScheduler();
-
-            await scheduler.Start();
-
-            var jobDataMap = new JobDataMap();
-            jobDataMap.Add("times", "1");
-
-            // 创建一个作业
-            IJobDetail job = JobBuilder.Create<HelloJob>()
-                .WithIdentity("job1", "jobGroup1")
-                .UsingJobData(jobDataMap)
-                .Build();
-
-            // 创建一个触发器
-            ITrigger trigger = TriggerBuilder.Create()
-                .WithIdentity("trigger1", "triggerGroup1")
-                .StartNow()
-                .WithSimpleSchedule(x => x
-                    .WithIntervalInSeconds(1)
-                    .WithRepeatCount(10))
-                .Build();
-
-            var jobExist = await scheduler.CheckExists(job.Key);
-            if (!jobExist)
+            // 配置和运行宿主服务
+            HostFactory.Run(x =>
             {
-                await scheduler.ScheduleJob(job, trigger);
-            }
-        }
-    }
+                // 指定服务类型。这里设置为 TestSchedule
+                x.Service<TestSchedule>(s =>
+                {
+                    // 通过 new TestSchedule() 构建一个服务实例 
+                    s.ConstructUsing(name => new TestSchedule());
+                    // 当服务启动后执行什么
+                    s.WhenStarted(tc => tc.Start());
+                    // 当服务停止后执行什么
+                    s.WhenStopped(tc => tc.Stop());
+                });
 
-    [PersistJobDataAfterExecution]
-    public class HelloJob : IJob
-    {
-        /// <summary>
-        /// 作业调度定时执行的方法
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public async Task Execute(IJobExecutionContext context)
-        {
-            var times = Convert.ToInt32(context.JobDetail.JobDataMap["times"]);
-            context.JobDetail.JobDataMap["times"] = (times + 1).ToString();
+                // 服务用本地系统账号来运行
+                x.RunAsLocalSystem();
 
-            await Console.Out.WriteLineAsync($"execute {times} times");
+                // 服务描述信息
+                x.SetDescription("TestSchedule");
+                // 服务显示名称
+                x.SetDisplayName("TestScheduleService");
+                // 服务名称
+                x.SetServiceName("TestScheduleService");
+
+            });
         }
     }
 }
