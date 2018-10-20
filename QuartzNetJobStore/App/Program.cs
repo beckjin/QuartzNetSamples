@@ -49,6 +49,7 @@ namespace App
     }
 
     [PersistJobDataAfterExecution]
+    [DisallowConcurrentExecution]
     public class HelloJob : IJob
     {
         /// <summary>
